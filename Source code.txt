@@ -1,0 +1,44 @@
+>> % Generate 10 seconds of ECG data at 500 Hz
+fs = 500;  
+t = 0:1/fs:10;
+
+>> % Model ECG as sum of sinusoids 
+ecg = 2*sin(2*pi*1.2*t) + 1.2*sin(2*pi*7*t) + 0.75*sin(2*pi*12*t);  
+
+>> % Add noise
+ecg = ecg + 0.2*randn(size(t)); 
+  
+>> % Plot raw ECG
+figure;
+plot(t,ecg);
+title('Simulated Noisy ECG Signal');
+xlabel('Time (s)');
+ylabel('Voltage (mV)');
+
+>> % Save to file
+save('ecgdata.mat','ecg');
+
+>> %signal acquisition
+>> load('ecgdata.mat')
+
+>> % Annotation
+annotation('textbox',[.2 .7 .1 .1],'String','QRS Complex','FitBoxToText','on');
+
+>> %Artefact removal
+>> %cutoff frequency normalization
+>> cutoff_norm = 40/fs
+>> ecg_filt = lowpass(ecg, cutoff_norm) 
+
+
+>> % Feature Extraction
+[pks,locs] = findpeaks(ecg_filt,'MinPeakProminence',0.5); % detects R peaks
+bpm = mean(60./(diff(locs))); % heart rate in beats per minute
+
+>> disp(['Heart Rate: ' num2str(bpm) ' bpm'])
+
+>> % Plot filtered signal with annotations  
+plot(t,ecg_filt)
+title('Filtered ECG Signal')
+xlabel('Time (s)')
+ylabel('Voltage (mV)') 
+annotation('textbox',[.2 .7 .1 .1],'String','R Peaks','FitBoxToText','on');
